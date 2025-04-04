@@ -240,6 +240,73 @@ exports.logout = async (req, res) => {
     }
 };
 
+exports.forgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: "Email is required" });
+
+        // Check if user exists (but don’t reveal if not, for security)
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(200).json({ message: "Invalid Email" });
+        }
+
+        // Check cooldown (3 minutes = 180 seconds)
+        const lastSent = await authService.getResetOTPSentTime(email);
+        const now = Date.now() / 1000;
+        const cooldownPeriod = 180;
+        if (lastSent && (now - lastSent < cooldownPeriod)) {
+            const timeLeft = Math.ceil(cooldownPeriod - (now - lastSent));
+            return res.status(429).json({ message: `Please wait ${timeLeft} seconds before requesting a new OTP` });
+        }
+
+        // Send OTP
+        await authService.sendResetOTP(email);
+        await authService.setResetOTPSentTime(email);
+
+        res.status(200).json({ message: "If this email is registered, an OTP will be sent" });
+    } catch (error) {
+        console.error("❌ Forget Password Error:", error);
+        res.status(500).json({ message: "Something went wrong, try again later", error: error.message });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: "Invalid request" });
+        }
+
+        // First, check if OTP matches
+        const storedOTP = await authService.getResetOTP(email);
+        if (!storedOTP) {
+            return res.status(400).json({ message: "OTP not found or expired. Please request a new one" });
+        }
+        if (storedOTP !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        // OTP matches, proceed with reset
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email or OTP" }); // Vague for security
+        }
+
+        // Update password
+        user.password = newPassword; // Will be hashed by pre-save hook
+        await user.save();
+
+        // Clean up Redis
+        await authService.clearResetOTP(email);
+
+        res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+        console.error("❌ Reset Password Error:", error);
+        res.status(500).json({ message: "Something went wrong, try again later", error: error.message });
+    }
+};
+
 
 
 // exports.register = async (req, res) => {
@@ -426,47 +493,47 @@ exports.logout = async (req, res) => {
 //     }
 // };
 
-exports.forgotPassword = async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
+// exports.forgotPassword = async (req, res) => {
+//     try {
+//         const { email } = req.body;
+//         const user = await User.findOne({ email });
 
-        if (!user) return res.status(400).json({ message: "User not found" });
+//         if (!user) return res.status(400).json({ message: "User not found" });
 
-        // Generate reset token
-        const resetToken = jwt.generateResetToken(user._id);
+//         // Generate reset token
+//         const resetToken = jwt.generateResetToken(user._id);
 
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins expiry
-        await user.save();
+//         user.resetPasswordToken = resetToken;
+//         user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins expiry
+//         await user.save();
 
-        await authService.sendResetPasswordEmail(user.email, resetToken);
-        res.status(200).json({ message: "Password reset email sent" });
-    } catch (error) {
-        res.status(500).json({ message: "Error sending password reset email", error });
-    }
-};
+//         await authService.sendResetPasswordEmail(user.email, resetToken);
+//         res.status(200).json({ message: "Password reset email sent" });
+//     } catch (error) {
+//         res.status(500).json({ message: "Error sending password reset email", error });
+//     }
+// };
 
-exports.resetPassword = async (req, res) => {
-    try {
-        const { token, newPassword } = req.body;
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() },
-        });
+// exports.resetPassword = async (req, res) => {
+//     try {
+//         const { token, newPassword } = req.body;
+//         const user = await User.findOne({
+//             resetPasswordToken: token,
+//             resetPasswordExpires: { $gt: Date.now() },
+//         });
 
-        if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+//         if (!user) return res.status(400).json({ message: "Invalid or expired token" });
 
-        user.password = newPassword;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        await user.save();
+//         user.password = newPassword;
+//         user.resetPasswordToken = undefined;
+//         user.resetPasswordExpires = undefined;
+//         await user.save();
 
-        res.status(200).json({ message: "Password reset successful" });
-    } catch (error) {
-        res.status(500).json({ message: "Error resetting password", error });
-    }
-};
+//         res.status(200).json({ message: "Password reset successful" });
+//     } catch (error) {
+//         res.status(500).json({ message: "Error resetting password", error });
+//     }
+// };
 
 // exports.resendOTP = async (req, res) => {
 //     try {

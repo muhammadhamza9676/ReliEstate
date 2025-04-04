@@ -202,3 +202,60 @@ exports.getLastOTPSentTime = async (email) => {
         throw new Error(`Failed to get OTP sent time: ${error.message}`);
     }
 };
+
+// Reset Password Helpers
+exports.sendResetOTP = async (email) => {
+    try {
+        const redisClient = await getRedisClient();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Delete any existing reset OTP before setting a new one
+        await redisClient.del(`resetOtp:${email}`);
+        await redisClient.set(`resetOtp:${email}`, otp, { EX: 600 }); // 10-minute expiry
+        
+        await emailService.sendEmail({
+            to: email,
+            subject: "ReliEstate Password Reset OTP",
+            text: `Your OTP to reset your password is ${otp}. It expires in 10 minutes.`,
+        });
+    } catch (error) {
+        throw new Error(`Failed to send reset OTP: ${error.message}`);
+    }
+};
+
+exports.getResetOTP = async (email) => {
+    try {
+        const redisClient = await getRedisClient();
+        return await redisClient.get(`resetOtp:${email}`);
+    } catch (error) {
+        throw new Error(`Failed to get reset OTP from Redis: ${error.message}`);
+    }
+};
+
+exports.getResetOTPSentTime = async (email) => {
+    try {
+        const redisClient = await getRedisClient();
+        const lastSent = await redisClient.get(`resetOtpLastSent:${email}`);
+        return lastSent ? parseInt(lastSent, 10) : null;
+    } catch (error) {
+        throw new Error(`Failed to get reset OTP sent time: ${error.message}`);
+    }
+};
+
+exports.setResetOTPSentTime = async (email) => {
+    try {
+        const redisClient = await getRedisClient();
+        await redisClient.set(`resetOtpLastSent:${email}`, Math.floor(Date.now() / 1000), { EX: 600 });
+    } catch (error) {
+        throw new Error(`Failed to set reset OTP sent time: ${error.message}`);
+    }
+};
+
+exports.clearResetOTP = async (email) => {
+    try {
+        const redisClient = await getRedisClient();
+        await redisClient.del(`resetOtp:${email}`);
+    } catch (error) {
+        throw new Error(`Failed to clear reset OTP: ${error.message}`);
+    }
+};

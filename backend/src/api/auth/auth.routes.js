@@ -10,7 +10,7 @@ router.post("/verify-otp", authController.verifyOTP);
 router.post("/login", rateLimit, authController.login);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/logout", authController.logout);
-router.post("/forgot-password", authController.forgotPassword);
+router.post("/forget-password", authController.forgetPassword);
 router.post("/reset-password", authController.resetPassword);
 router.post("/resend-otp", authController.resendOTP);
 
