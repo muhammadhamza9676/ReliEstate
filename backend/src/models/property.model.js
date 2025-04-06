@@ -124,7 +124,7 @@ propertySchema.index({ postedBy: 1 });
 propertySchema.index({ "location.city": 1 });
 propertySchema.index({ status: 1 });
 propertySchema.index({ type: 1 });
-propertySchema.index({ slug: 1 }, { unique: true });
+// propertySchema.index({ slug: 1 }, { unique: true });
 
 const Property = mongoose.model("Property", propertySchema);
 module.exports = Property;

@@ -9,18 +9,15 @@
 //     }
 // };
 
-// exports.uploadImages = async (images) => {
+// exports.uploadImages = async (files) => {
 //     try {
-//         if (!Array.isArray(images) || images.length === 0) {
-//             throw new Error("Images must be a non-empty array");
+//         if (!Array.isArray(files) || files.length === 0) {
+//             throw new Error("No images provided");
 //         }
 
 //         const uploaded = await Promise.all(
-//             images.map(async (img, index) => {
-//                 if (typeof img !== "string") {
-//                     throw new Error(`Image at index ${index} must be a string (base64 or path)`);
-//                 }
-//                 const url = await imgbbUpload(img); // Assumes img is base64 or path
+//             files.map(async (file, index) => {
+//                 const url = await imgbbUpload(file.buffer); // Assumes imgbbUpload accepts buffer
 //                 if (!url) throw new Error(`Upload failed for image at index ${index}`);
 //                 return url;
 //             })
@@ -33,6 +30,27 @@
 //     }
 // };
 
+// exports.getProperties = async (filters, sort, skip, limit) => {
+//     try {
+//         return await Property.find(filters)
+//             .sort(sort)
+//             .skip(skip)
+//             .limit(limit)
+//             .select("-postedBy"); // Exclude full postedBy details for public access
+//     } catch (error) {
+//         throw new Error(`Failed to fetch properties: ${error.message}`);
+//     }
+// };
+
+// exports.countProperties = async (filters) => {
+//     try {
+//         return await Property.countDocuments(filters);
+//     } catch (error) {
+//         throw new Error(`Failed to count properties: ${error.message}`);
+//     }
+// };
+
+// api/properties/property.service.js
 const Property = require("../../models/property.model");
 const imgbbUpload = require("../../utils/imgbb");
 
@@ -52,7 +70,7 @@ exports.uploadImages = async (files) => {
 
         const uploaded = await Promise.all(
             files.map(async (file, index) => {
-                const url = await imgbbUpload(file.buffer); // Assumes imgbbUpload accepts buffer
+                const url = await imgbbUpload(file.buffer);
                 if (!url) throw new Error(`Upload failed for image at index ${index}`);
                 return url;
             })
@@ -65,13 +83,13 @@ exports.uploadImages = async (files) => {
     }
 };
 
-exports.getProperties = async (filters, sort, skip, limit) => {
+exports.getProperties = async (filters, sort, skip, limit, fields = "") => {
     try {
         return await Property.find(filters)
             .sort(sort)
             .skip(skip)
             .limit(limit)
-            .select("-postedBy"); // Exclude full postedBy details for public access
+            .select(fields);
     } catch (error) {
         throw new Error(`Failed to fetch properties: ${error.message}`);
     }
@@ -82,5 +100,15 @@ exports.countProperties = async (filters) => {
         return await Property.countDocuments(filters);
     } catch (error) {
         throw new Error(`Failed to count properties: ${error.message}`);
+    }
+};
+
+exports.getPropertyBySlug = async (slug) => {
+    try {
+        const property = await Property.findOne({ slug })
+            .populate("postedBy", "name email phone"); // Assumes number is in User schema
+        return property;
+    } catch (error) {
+        throw new Error(`Failed to fetch property by slug: ${error.message}`);
     }
 };

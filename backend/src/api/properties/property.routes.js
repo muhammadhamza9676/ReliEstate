@@ -18,5 +18,7 @@ const router = express.Router();
 
 router.post("/add", protect, uploadImages, propertyController.createProperty);
 router.get("/", propertyController.getAllProperties);
+router.get("/user", protect, propertyController.getUserProperties);
+router.get("/:slug", propertyController.getPropertyBySlug);
 
 module.exports = router;
