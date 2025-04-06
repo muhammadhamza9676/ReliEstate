@@ -26,7 +26,8 @@ const cookieParser = require("cookie-parser");
 // Import Routes
 const authRoutes = require("./api/auth/auth.routes");
 // const userRoutes = require("./api/users/user.routes");
-// const propertyRoutes = require("./api/properties/property.routes");
+const propertyRoutes = require("./api/properties/property.routes");
+
 
 // Load environment variables
 dotenv.config();
@@ -43,7 +44,7 @@ app.use(cookieParser()); // Parse cookies
 // Routes
 app.use("/api/auth", authRoutes);
 // app.use("/api/users", userRoutes);
-// app.use("/api/properties", propertyRoutes);
+app.use("/api/properties", propertyRoutes);
 
 // Health check
 app.get("/", (req, res) => {
