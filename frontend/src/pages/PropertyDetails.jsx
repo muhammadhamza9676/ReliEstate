@@ -3,11 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { fetchPropertyBySlug } from "../redux/slices/propertySlice";
 import { Link } from "react-router-dom";
+import InquiryForm from "../components/InquiryForm";
 
 const PropertyDetails = () => {
     const { slug } = useParams();
     const dispatch = useDispatch();
     const { property, loading, error } = useSelector((state) => state.property);
+    const user = useSelector((state) => state.auth);
+    const token = user?.accessToken;
 
     useEffect(() => {
         if (slug) {
@@ -123,6 +126,13 @@ const PropertyDetails = () => {
                     </p>
                 </div>
             )}
+    {
+        property && (
+            <InquiryForm propertyId={property._id} token={token} />
+        )
+    }
+            
+
         </div>
     );
 };

@@ -9,6 +9,7 @@ import AddProperty from "../pages/AddProperty";
 import PropertyList from "../pages/PropertyList";
 import PropertyDetails from "../pages/PropertyDetails";
 import UserProfile from "../pages/UserProfile";
+import MyInquiries from "../pages/MyInquiries";
 
 export default function AppRoutes() {
   return (
@@ -24,6 +25,7 @@ export default function AppRoutes() {
         {/* <ProtectedRoute path="/dashboard" component={Dashboard} /> */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/add-property" element={<ProtectedRoute><AddProperty/></ProtectedRoute>} />
+        <Route path="/inquiries" element={<ProtectedRoute><MyInquiries /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

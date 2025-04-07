@@ -3,10 +3,13 @@ import { useUserProperties } from "../hooks/useUserProperties";
 import { useUserDetails } from "../hooks/useUserDetails";
 import { useSelector } from "react-redux";
 import { useState } from "react";
+import { useUserReviews } from "../hooks/useUserReviews";
+import ReviewForm from "../components/ReviewForm";
 
 const UserProfile = () => {
   const { userId } = useParams();
   const token = useSelector((state) => state.auth.accessToken);
+  const authUser = useSelector((state) => state.auth.user.id);
 
   const [page, setPage] = useState(1);
 
@@ -17,6 +20,13 @@ const UserProfile = () => {
     loading: propertiesLoading,
     error: propertiesError,
   } = useUserProperties(userId, token, page);
+
+  const {
+    reviews,
+    loading: reviewsLoading,
+    error: reviewsError,
+  } = useUserReviews(userId, token);
+
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -53,6 +63,29 @@ const UserProfile = () => {
           !propertiesLoading && <p>No properties found.</p>
         )}
       </div>
+
+      <h2 className="text-xl font-semibold mt-10 mb-3">Reviews</h2>
+
+      {reviewsLoading && <p>Loading reviews...</p>}
+      {reviewsError && <p className="text-red-500">{reviewsError}</p>}
+
+      <div className="space-y-4">
+        {reviews.map((review) => (
+          <div key={review._id} className="border p-4 rounded shadow-sm">
+            <div className="font-semibold text-yellow-600">⭐ {review.rating}</div>
+            <p className="text-sm text-gray-800 mt-1">{review.comment}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {new Date(review.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Show review form if the logged-in user is not the profile owner */}
+      {authUser !== userId && (
+        <ReviewForm brokerId={userId} token={token} />
+      )}
+
 
       {meta.totalPages > 1 && (
         <div className="flex gap-2 mt-4">

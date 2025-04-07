@@ -1,6 +1,13 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
+const reviewSchema = new mongoose.Schema({
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Who left the review
+    rating: { type: Number, required: true, min: 1, max: 5 }, // Rating out of 5
+    comment: { type: String, required: true, trim: true }, // Review text
+    createdAt: { type: Date, default: Date.now }, // Timestamp
+});
+
 const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
@@ -25,6 +32,7 @@ const userSchema = new mongoose.Schema(
 
         resetPasswordToken: { type: String, select: false },
         resetPasswordExpires: { type: Date, select: false },
+        reviews: [reviewSchema], // Array of reviews
     },
     { timestamps: true }
 );
