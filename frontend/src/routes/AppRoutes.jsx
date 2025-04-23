@@ -10,6 +10,8 @@ import PropertyList from "../pages/PropertyList";
 import PropertyDetails from "../pages/PropertyDetails";
 import UserProfile from "../pages/UserProfile";
 import MyInquiries from "../pages/MyInquiries";
+import ProtectedAdminRoute from "./AdminRoutes";
+import AdminDashboard from "../pages/AdminDashboard";
 
 export default function AppRoutes() {
   return (
@@ -19,13 +21,18 @@ export default function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
-        <Route path="/browse" element={<PropertyList/>} />
+        <Route path="/browse" element={<PropertyList />} />
         <Route path="/properties/:slug" element={<PropertyDetails />} />
         <Route path="/users/:userId" element={<UserProfile />} />
         {/* <ProtectedRoute path="/dashboard" component={Dashboard} /> */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/add-property" element={<ProtectedRoute><AddProperty/></ProtectedRoute>} />
+        <Route path="/add-property" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
         <Route path="/inquiries" element={<ProtectedRoute><MyInquiries /></ProtectedRoute>} />
+
+        <Route path="/admin" element={<ProtectedAdminRoute />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+        </Route>
+
       </Routes>
     </BrowserRouter>
   );
