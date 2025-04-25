@@ -28,6 +28,7 @@ const authRoutes = require("./api/auth/auth.routes");
 const userRoutes = require("./api/users/user.routes");
 const propertyRoutes = require("./api/properties/property.routes");
 const inquiryRoutes = require("./api/inquiries/inquiry.routes");
+const adminRoutes = require("./api/admin/admin.routes");
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +47,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/", (req, res) => {

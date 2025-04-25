@@ -134,6 +134,7 @@
 // };
 
 // api/properties/property.controller.js
+const Property = require("../../models/property.model");
 const User = require("../../models/user.model");
 const propertyService = require("./property.service");
 
@@ -341,5 +342,99 @@ exports.getUserProperties = async (req, res) => {
     } catch (error) {
         console.error("❌ Get User Properties Error:", error);
         res.status(500).json({ message: "Failed to fetch user properties", error: error.message });
+    }
+};
+
+exports.updateProperty = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+        if (!id) return res.status(400).json({ message: "Property ID is required" });
+        const property = await Property.findById(id);
+        if (!property) return res.status(404).json({ message: "Property not found" });
+        if (property.postedBy.toString() !== user._id.toString()) {
+            return res.status(403).json({ message: "You can only update your own properties" });
+        }
+
+        const { title, description, price, purpose, type, area, location, bedrooms, bathrooms, features, facilities, furnishing, tags, availabilityDate } = req.body;
+
+        const updatedData = {};
+        if (title) updatedData.title = title;
+        if (description) updatedData.description = description;
+        if (price) {
+            if (price <= 0) return res.status(400).json({ message: "Price must be greater than 0" });
+            updatedData.price = Number(price);
+        }
+        if (purpose) updatedData.purpose = purpose;
+        if (type) updatedData.type = type;
+        if (area) {
+            let parsedArea;
+            try {
+                parsedArea = typeof area === "string" ? JSON.parse(area) : area;
+                if (!parsedArea.value || !parsedArea.unit || parsedArea.value <= 0) {
+                    return res.status(400).json({ message: "Area value and unit are required and must be positive" });
+                }
+                updatedData.area = parsedArea;
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid area format" });
+            }
+        }
+        if (location) {
+            let parsedLocation;
+            try {
+                parsedLocation = typeof location === "string" ? JSON.parse(location) : location;
+                if (!parsedLocation.city) {
+                    return res.status(400).json({ message: "City is required in location" });
+                }
+                updatedData.location = parsedLocation;
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid location format" });
+            }
+        }
+        if (bedrooms) updatedData.bedrooms = Number(bedrooms);
+        if (bathrooms) updatedData.bathrooms = Number(bathrooms);
+        if (features) updatedData.features = JSON.parse(features);
+        if (facilities) updatedData.facilities = JSON.parse(facilities);
+        if (furnishing) updatedData.furnishing = furnishing;
+        if (tags) updatedData.tags = JSON.parse(tags);
+        if (availabilityDate) updatedData.availabilityDate = new Date(availabilityDate);
+
+        if (req.files && req.files.length > 0) {
+            const uploadedImageUrls = await propertyService.uploadImages(req.files);
+            if (!uploadedImageUrls || uploadedImageUrls.length === 0) {
+                return res.status(500).json({ message: "Image upload failed" });
+            }
+            updatedData.images = uploadedImageUrls;
+        }
+        console.log("2")
+        const updatedProperty = await Property.findByIdAndUpdate(id, { $set: updatedData }, { new: true });
+        res.status(200).json({
+            message: "Property updated successfully",
+            property: updatedProperty,
+        });
+    } catch (error) {
+        console.error("❌ Update Property Error:", error);
+        res.status(500).json({ message: "Failed to update property", error: error.message });
+    }
+};
+
+exports.deleteProperty = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+        if (!id) return res.status(400).json({ message: "Property ID is required" });
+
+        const property = await Property.findById(id);
+        if (!property) return res.status(404).json({ message: "Property not found" });
+
+        if (property.postedBy.toString() !== user._id.toString()) {
+            return res.status(403).json({ message: "You can only delete your own properties" });
+        }
+
+        await Property.findByIdAndDelete(id);
+        res.status(200).json({ message: "Property deleted successfully" });
+    } catch (error) {
+        console.error("❌ Delete Property Error:", error);
+        res.status(500).json({ message: "Failed to delete property", error: error.message });
     }
 };

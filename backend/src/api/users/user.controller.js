@@ -137,3 +137,47 @@ exports.getUserReviews = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch reviews", error: error.message });
     }
 };
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select("+password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user.verified) return res.status(403).json({ message: "Please verify your email to update your profile" });
+
+        const { name, password, phone, brokerInfo } = req.body;
+
+        // Ignore email if sent
+        const updatedData = {};
+        if (name) updatedData.name = name;
+        if (password) updatedData.password = password; // Will be hashed by schema pre-save
+        if (phone) updatedData.phone = phone;
+        if (brokerInfo) {
+            updatedData.brokerInfo = {
+                ...user.brokerInfo,
+                experience: brokerInfo.experience || user.brokerInfo.experience,
+                agencyName: brokerInfo.agencyName || user.brokerInfo.agencyName,
+                licenseNumber: brokerInfo.licenseNumber || user.brokerInfo.licenseNumber,
+            };
+        }
+
+        // Update user
+        Object.assign(user, updatedData);
+        await user.save();
+
+        // Check profile completion
+        if (user.name && user.email && user.password && user.phone) {
+            user.profileCompleted = true;
+            await user.save();
+        }
+
+        // Return updated user, excluding sensitive fields
+        const updatedUser = await User.findById(user._id).select("-password -refreshTokens -resetPasswordToken -resetPasswordExpires");
+        res.status(200).json({
+            message: "Profile updated successfully",
+            data: updatedUser,
+        });
+    } catch (error) {
+        console.error("❌ Update Profile Error:", error);
+        res.status(500).json({ message: "Failed to update profile", error: error.message });
+    }
+};
