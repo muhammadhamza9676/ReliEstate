@@ -117,7 +117,7 @@ export default function Login() {
           </div>
 
           <div className="mt-8 text-center text-gray-500 text-sm">
-            <p>© 2023 ReliEstate. All rights reserved.</p>
+            <p>© 2025 ReliEstate. All rights reserved.</p>
           </div>
         </div>
       </div>

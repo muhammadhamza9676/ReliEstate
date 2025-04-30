@@ -12,6 +12,7 @@ import UserProfile from "../pages/UserProfile";
 import MyInquiries from "../pages/MyInquiries";
 import ProtectedAdminRoute from "./AdminRoutes";
 import AdminDashboard from "../pages/AdminDashboard";
+import EditProperty from "../pages/EditProperty";
 
 export default function AppRoutes() {
   return (
@@ -28,6 +29,7 @@ export default function AppRoutes() {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/add-property" element={<ProtectedRoute><AddProperty /></ProtectedRoute>} />
         <Route path="/inquiries" element={<ProtectedRoute><MyInquiries /></ProtectedRoute>} />
+        <Route path="/edit-property/:id" element={<ProtectedRoute><EditProperty /></ProtectedRoute>} />
 
         <Route path="/admin" element={<ProtectedAdminRoute />}>
           <Route path="dashboard" element={<AdminDashboard />} />

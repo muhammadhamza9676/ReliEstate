@@ -52,13 +52,13 @@ const Home = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-700 hover:text-red-600 transition-colors">
+              <a href="#features" className="text-gray-950 hover:text-red-600 transition-colors">
                 Features
               </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-red-600 transition-colors">
+              <a href="#how-it-works" className="text-gray-950 hover:text-red-600 transition-colors">
                 How It Works
               </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-red-600 transition-colors">
+              <a href="#testimonials" className="text-gray-950 hover:text-red-600 transition-colors">
                 Testimonials
               </a>
               <button
@@ -507,7 +507,7 @@ const Home = () => {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>© 2023 ReliEstate. All rights reserved.</p>
+            <p>© 2025 ReliEstate. All rights reserved.</p>
           </div>
         </div>
       </footer>
