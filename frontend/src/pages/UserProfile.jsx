@@ -21,6 +21,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { Link } from "react-router-dom"
+import Navbar from "../components/Navbar"
 
 const UserProfile = () => {
   const { userId } = useParams()
@@ -78,9 +79,11 @@ const UserProfile = () => {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Header */}
-      <div className="bg-black text-white py-12">
+      <div className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Agent Profile</h1>
           <p className="text-gray-300">View agent details, listings, and reviews</p>
@@ -325,6 +328,7 @@ const UserProfile = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

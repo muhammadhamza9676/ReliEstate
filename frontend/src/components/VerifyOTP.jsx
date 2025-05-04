@@ -71,6 +71,8 @@ const VerifyOTP = () => {
                   <input
                     type="text"
                     id="otp"
+                    inputMode="numeric"
+                    pattern="\d*"
                     placeholder="Enter 6-digit code"
                     className="pl-10 w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-center tracking-widest font-medium"
                     value={otp}

@@ -1,89 +1,156 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import PropertyForm from "./PropertyForm"; // adjust path if needed
-import { fetchPropertyBySlug } from "../redux/slices/propertySlice";
+
+import { useEffect, useState } from "react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchPropertyBySlug, updateProperty, clearPropertyState } from "../redux/slices/propertySlice"
+import { Loader, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
+import PropertyForm from "../components/PropertyForm"
+import Navbar from "../components/Navbar";
+
 
 const EditProperty = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({});
-  const [dialogOpen, setDialogOpen] = useState(true);
+  console.log("SLug is", id);
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const { accessToken } = useSelector((state) => state.auth)
+  const { property:propertyDetails, loading, success, error } = useSelector((state) => state.property)
+  console.log(propertyDetails)
+  const [form, setForm] = useState(null)
+  const [images, setImages] = useState([])
+  const [previewImages, setPreviewImages] = useState([])
 
   useEffect(() => {
-    const fetchProperty = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/properties/${fetchPropertyBySlug(id)}`);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Failed to fetch property data.");
-        setFormData(data);
-      } catch (error) {
-        alert(error.message);
-        navigate("/dashboard");
-      }
-    };
+    if (id) dispatch(fetchPropertyBySlug(id))
+    return () => dispatch(clearPropertyState())
+  }, [dispatch, id])
 
-    if (id) {
-      fetchProperty();
+  useEffect(() => {
+    console.log("1")
+    if (propertyDetails) {
+      console.log("2")
+      setForm({
+        title: propertyDetails.title,
+        description: propertyDetails.description,
+        price: propertyDetails.price,
+        purpose: propertyDetails.purpose,
+        type: propertyDetails.type,
+        areaValue: propertyDetails.area?.value || "",
+        areaUnit: propertyDetails.area?.unit || "sqft",
+        city: propertyDetails.location?.city || "",
+        bedrooms: propertyDetails.bedrooms || "",
+        bathrooms: propertyDetails.bathrooms || "",
+      })
+      console.log("3")
+      if (propertyDetails.images && Array.isArray(propertyDetails.images)) {
+        setPreviewImages(propertyDetails.images.map((img) => img.url || img))
+      }
     }
-  }, [id, navigate]);
+  }, [propertyDetails])
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/properties/${fetchPropertyBySlug}{id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+  const handleFileChange = (e) => {
+    const files = [...e.target.files]
+    setImages(files)
+    const previews = files.map((file) => URL.createObjectURL(file))
+    setPreviewImages(previews)
+  }
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Update failed");
-      alert("Property updated successfully!");
-      navigate("/dashboard");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+  const removeImage = (idx) => {
+    const newPreviews = [...previewImages]
+    const newImages = [...images]
+    newPreviews.splice(idx, 1)
+    newImages.splice(idx, 1)
+    setPreviewImages(newPreviews)
+    setImages(newImages)
+  }
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this property?")) return;
+  const handleSubmit = (e) => {
+    e.preventDefault()
 
-    try {
-      const response = await fetch(`http://localhost:5000/api/properties/${id}`, {
-        method: "DELETE",
-      });
+    const formData = new FormData()
+    formData.append("title", form.title)
+    formData.append("description", form.description)
+    formData.append("price", form.price)
+    formData.append("purpose", form.purpose)
+    formData.append("type", form.type)
+    formData.append("area", JSON.stringify({ value: Number(form.areaValue), unit: form.areaUnit }))
+    formData.append("location", JSON.stringify({ city: form.city }))
+    if (form.bedrooms) formData.append("bedrooms", form.bedrooms)
+    if (form.bathrooms) formData.append("bathrooms", form.bathrooms)
+    images.forEach((img) => formData.append("images", img))
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Delete failed");
-      alert("Property deleted successfully.");
-      navigate("/dashboard");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+    dispatch(updateProperty({ id: propertyDetails?._id, formData, token: accessToken }))
+  }
 
-  const handleClose = () => {
-    setDialogOpen(false);
-    navigate("/dashboard");
-  };
+  if (!form) return <div className="p-6 text-center">Loading property...</div>
 
   return (
-    <div className="p-4">
-      <PropertyForm
-        open={dialogOpen}
-        formData={formData}
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-        onClose={handleClose}
-        onDelete={handleDelete}
-        isEdit
-      />
-    </div>
-  );
-};
+    <>
+    <Navbar/>
+    <div className="bg-gray-50 min-h-screen pb-16">
+      <div className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Edit Property</h1>
+          <p className="text-gray-300">Update your listing's details and media</p>
+          {/* Back Link */}
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center text-gray-100 hover:text-red-600 transition-colors mt-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
 
-export default EditProperty;
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+
+          {success && (
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+              <div className="flex">
+                <CheckCircle className="h-6 w-6 text-green-500 mr-3" />
+                <div>
+                  <p className="font-medium text-green-800">Property Updated Successfully!</p>
+                  <p className="text-green-700 mt-1">Your property details have been updated.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+              <div className="flex">
+                <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+                <div>
+                  <p className="font-medium text-red-800">Error</p>
+                  <p className="text-red-700 mt-1">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <PropertyForm
+            form={form}
+            onChange={handleChange}
+            images={images}
+            previewImages={previewImages}
+            onFileChange={handleFileChange}
+            onSubmit={handleSubmit}
+            loading={loading}
+            isEdit
+            removeImage={removeImage}
+          />
+        </div>
+      </div>
+    </div>
+    </>
+  )
+}
+
+export default EditProperty

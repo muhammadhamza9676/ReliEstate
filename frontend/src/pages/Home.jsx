@@ -23,7 +23,7 @@ const Home = () => {
   }, [])
 
   const handleGoToDashboard = () => {
-    navigate("/dashboard")
+    navigate("/browse")
   }
 
   const handleGoToLogin = () => {

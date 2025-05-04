@@ -36,13 +36,14 @@ import {
   ChevronRight,
 } from "lucide-react"
 import LogoutButton from "../components/LogoutButton"
+import Navbar from "../components/Navbar"
 
 // Custom theme colors
 const THEME_COLORS = ["#e11d48", "#1e293b", "#0284c7", "#059669"]
 
 const AdminDashboard = () => {
   const user = useSelector((state) => state.auth)
-  const token = user.accessToken
+  const token = user?.accessToken
 
   const [dashboard, setDashboard] = useState(null)
   const [error, setError] = useState(null)
@@ -57,6 +58,7 @@ const AdminDashboard = () => {
             Authorization: `Bearer ${token}`,
           },
         })
+        console.log(res.data)
         setDashboard(res.data.data)
         setError(null)
       } catch (err) {
@@ -105,15 +107,15 @@ const AdminDashboard = () => {
   const { overview, users, properties, inquiries } = dashboard
 
   const roleData = [
-    { name: "Admins", value: overview.totalAdmins },
-    { name: "Brokers", value: overview.totalBrokers },
-    { name: "Buyers", value: overview.totalBuyers },
+    { name: "Admins", value: overview.userRoles.admin || 0 },
+    { name: "Brokers", value: overview.userRoles.broker || 0 },
+    { name: "Users", value: overview.userRoles.user || 0 },
   ]
 
   const propertyStatusData = [
-    { name: "Active", count: overview.totalActiveProperties },
-    { name: "Pending", count: overview.totalPendingProperties },
-    { name: "Sold", count: overview.totalSoldProperties },
+    { name: "For Sale", count: overview.totalSaleProperties || 0 },
+    { name: "For Rent", count: overview.totalRentProperties || 0 },
+    { name: "Total", count: overview.totalProperties || 0 },
   ]
 
   // Calculate percentage changes (mock data for example)
@@ -134,9 +136,11 @@ const AdminDashboard = () => {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Header */}
-      <div className="bg-black text-white py-8">
+      <div className="bg-gray-900 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
@@ -148,7 +152,6 @@ const AdminDashboard = () => {
                 <Clock className="h-4 w-4 inline mr-1" />
                 {new Date().toLocaleDateString()}
               </span>
-              <LogoutButton/>
             </div>
           </div>
         </div>
@@ -182,7 +185,7 @@ const AdminDashboard = () => {
             label="Verified Brokers"
             value={overview?.totalVerifiedBrokers ?? 0}
             icon={<UserCheck className="h-6 w-6 text-green-600" />}
-            change={getBrokersChange()}
+            //change={getBrokersChange()}
             color="green"
           />
         </div>
@@ -217,7 +220,7 @@ const AdminDashboard = () => {
                     <Cell key={`cell-${index}`} fill={THEME_COLORS[index % THEME_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${value} Users`, "Count"]} />
+                <Tooltip formatter={(value) => [`${value} `, "Value Count"]} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -365,18 +368,18 @@ const AdminDashboard = () => {
                   {properties.recentProperties.map((property, i) => (
                     <tr key={i} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{property.title}</div>
+                        <div className="text-sm font-medium text-gray-900">{property?.title}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 text-gray-400 mr-2" />
-                          <div className="text-sm text-gray-500">{property.city}</div>
+                          <div className="text-sm text-gray-500">{property?.location?.city}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <DollarSign className="h-4 w-4 text-gray-400 mr-1" />
-                          <div className="text-sm text-gray-900 font-medium">{property.price}</div>
+                          <div className="text-sm text-gray-900 font-medium">{property?.price}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -389,7 +392,7 @@ const AdminDashboard = () => {
                                 : "bg-gray-100 text-gray-800"
                           }`}
                         >
-                          {property.status || "active"}
+                          {property?.status || "active"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -406,6 +409,7 @@ const AdminDashboard = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

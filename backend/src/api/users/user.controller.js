@@ -159,7 +159,14 @@ exports.updateProfile = async (req, res) => {
                 licenseNumber: brokerInfo.licenseNumber || user.brokerInfo.licenseNumber,
             };
         }
-
+        if (
+            updatedData.brokerInfo.experience &&
+            updatedData.brokerInfo.agencyName &&
+            updatedData.brokerInfo.licenseNumber
+        ) {
+            updatedData.role = "broker";
+        }
+        
         // Update user
         Object.assign(user, updatedData);
         await user.save();

@@ -14,6 +14,9 @@ exports.getDashboard = async (req, res) => {
         const totalInquiries = await Inquiry.countDocuments();
         const pendingInquiries = await Inquiry.countDocuments({ status: "pending" });
 
+        const totalRentProperties = await Property.countDocuments({ purpose: "rent" });
+        const totalSaleProperties = await Property.countDocuments({ purpose: "sale" });
+
         // User Insights
         const recentUsers = await User.find()
             .sort({ createdAt: -1 })
@@ -32,7 +35,7 @@ exports.getDashboard = async (req, res) => {
         const recentProperties = await Property.find()
             .sort({ createdAt: -1 })
             .limit(10)
-            .select("title postedBy status isVerified createdAt")
+            .select("title postedBy status isVerified createdAt location price")
             .populate("postedBy", "name");
         const mostViewedProperties = await Property.find()
             .sort({ views: -1 })
@@ -69,6 +72,8 @@ exports.getDashboard = async (req, res) => {
                 unverifiedProperties,
                 totalInquiries,
                 pendingInquiries,
+                totalRentProperties,
+                totalSaleProperties
             },
             users: {
                 recentUsers,

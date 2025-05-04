@@ -1,71 +1,3 @@
-// import { useSelector } from "react-redux";
-// import { useState } from "react";
-// import { useMyInquiries } from "../hooks/useMyInquiries";
-
-// const MyInquiries = () => {
-//     const user = useSelector((state) => state.auth);
-//     const token = user?.accessToken;
-//   const [page, setPage] = useState(1);
-
-//   const { inquiries, meta, loading, error } = useMyInquiries(token, page);
-
-//   return (
-//     <div className="max-w-5xl mx-auto p-6">
-//       <h1 className="text-2xl font-bold mb-4">My Inquiries</h1>
-
-//       {loading && <p>Loading inquiries...</p>}
-//       {error && <p className="text-red-500">{error}</p>}
-
-//       <div className="space-y-4">
-//         {inquiries.map((inq) => (
-//           <div key={inq._id} className="border rounded p-4 shadow">
-//             <h2 className="font-semibold text-lg">{inq.name}</h2>
-//             <p className="text-sm text-gray-600">{inq.phone}</p>
-//             <p className="text-gray-800 mt-2">{inq.inquiry}</p>
-//             <p className="text-sm mt-2">
-//               For:{" "}
-//               <a
-//                 href={`/properties/${inq.property.slug}`}
-//                 className="text-blue-600 underline"
-//               >
-//                 {inq.property.title}
-//               </a>
-//             </p>
-//             <p className="text-xs text-gray-400">
-//               {new Date(inq.createdAt).toLocaleDateString()}
-//             </p>
-//           </div>
-//         ))}
-//       </div>
-
-//       {meta.totalPages > 1 && (
-//         <div className="flex gap-2 mt-6">
-//           {Array.from({ length: meta.totalPages }, (_, i) => (
-//             <button
-//               key={i}
-//               onClick={() => setPage(i + 1)}
-//               className={`px-3 py-1 border rounded ${
-//                 page === i + 1 ? "bg-blue-500 text-white" : ""
-//               }`}
-//             >
-//               {i + 1}
-//             </button>
-//           ))}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default MyInquiries;
-
-
-
-
-
-
-"use client"
-
 import { useSelector } from "react-redux"
 import { useState } from "react"
 import { useMyInquiries } from "../hooks/useMyInquiries"
@@ -82,10 +14,11 @@ import {
   AlertCircle,
   Inbox,
 } from "lucide-react"
+import Navbar from "../components/Navbar"
 
 const MyInquiries = () => {
   const user = useSelector((state) => state.auth)
-  const token = user?.accessToken
+  const token = user?.accessToken;
   const [page, setPage] = useState(1)
 
   const { inquiries, meta, loading, error } = useMyInquiries(token, page)
@@ -97,9 +30,11 @@ const MyInquiries = () => {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Header */}
-      <div className="bg-black text-white py-12">
+      <div className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">My Inquiries</h1>
           <p className="text-gray-300">View and manage inquiries about your properties</p>
@@ -177,10 +112,10 @@ const MyInquiries = () => {
                       <div>
                         <h3 className="font-medium">Property</h3>
                         <Link
-                          to={`/properties/${inq.property.slug}`}
+                          to={`/properties/${inq?.property?.slug}`}
                           className="text-red-600 hover:text-red-800 transition-colors"
                         >
-                          {inq.property.title}
+                          {inq?.property?.title}
                         </Link>
                       </div>
                     </div>
@@ -254,6 +189,7 @@ const MyInquiries = () => {
         )}
       </div>
     </div>
+    </>
   )
 }
 

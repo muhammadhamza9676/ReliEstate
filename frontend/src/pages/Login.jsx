@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { login } from "../redux/slices/authSlice"
 import { toast } from "react-toastify"
@@ -13,6 +13,14 @@ export default function Login() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { loading } = useSelector((state) => state.auth)
+  const user = useSelector((state) => state.auth)
+  const token = user.accessToken;
+
+  useEffect(()=>{
+    if(user?.user && token){
+      navigate("/dashboard")
+    }
+  },[])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

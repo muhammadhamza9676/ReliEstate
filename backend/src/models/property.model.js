@@ -1,64 +1,3 @@
-// const mongoose = require("mongoose");
-// const { Schema, Types } = mongoose;
-
-// const propertySchema = new Schema({
-//   title: { type: String, required: true },
-//   description: { type: String, required: true },
-//   price: { type: Number, required: true },
-
-//   purpose: { type: String, enum: ['sale', 'rent'], required: true },
-//   type: { type: String, enum: ['plot', 'house', 'apartment', 'commercial'], required: true },
-
-//   area: {
-//     value: { type: Number, required: true },
-//     unit: { type: String, enum: ['sqft', 'marla', 'kanal', 'sqm'], required: true },
-//   },
-
-//   bedrooms: { type: Number },
-//   bathrooms: { type: Number },
-
-//   features: {
-//     type: Map,
-//     of: Number
-//   },
-//   facilities: {
-//     type: Map,
-//     of: Boolean
-//   },
-
-//   location: {
-//     address: { type: String },
-//     city: { type: String },
-//     state: { type: String },
-//     country: { type: String },
-//     coordinates: {
-//       lat: Number,
-//       lng: Number
-//     }
-//   },
-
-//   images: [{ type: String }],
-//   isVerified: { type: Boolean, default: false },
-//   status: { type: String, enum: ['active', 'sold', 'rented', 'draft'], default: 'draft' },
-
-//   slug: { type: String, unique: true },
-//   views: { type: Number, default: 0 },
-//   availabilityDate: { type: Date },
-
-//   furnishing: { type: String, enum: ['unfurnished', 'semi-furnished', 'fully-furnished'] },
-//   tags: [String],
-
-//   postedBy: {
-//     type: Types.ObjectId,
-//     ref: "User",
-//     required: true
-//   }
-
-// }, { timestamps: true });
-
-// const Property = mongoose.model("Property", propertySchema);
-// module.exports = Property;
-
 const mongoose = require("mongoose");
 const { Schema, Types } = mongoose;
 const slugify = require("slugify"); // Install: npm install slugify
@@ -95,7 +34,7 @@ const propertySchema = new Schema({
 
   images: [{ type: String }], // Default not needed since it's optional
   isVerified: { type: Boolean, default: false },
-  status: { type: String, enum: ["active", "sold", "rented", "draft"], default: "draft" },
+  status: { type: String, enum: ["active", "sold", "rented", "draft"], default: "active" },
 
   slug: { type: String, unique: true, lowercase: true },
   views: { type: Number, default: 0, min: 0 },
