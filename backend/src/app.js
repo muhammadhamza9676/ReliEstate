@@ -1,21 +1,3 @@
-// const express = require("express");
-// const cors = require("cors");
-
-// const app = express();
-
-// // Middlewares
-// app.use(cors());
-// app.use(express.json());
-
-// // Routes
-// const authRoutes = require("./api/auth/auth.routes");
-// app.use("/api/auth", authRoutes);
-
-// app.get("/", (req, res) => {
-//     res.send("API is running...");
-// });
-
-// module.exports = app;
 
 const express = require("express");
 const cors = require("cors");
